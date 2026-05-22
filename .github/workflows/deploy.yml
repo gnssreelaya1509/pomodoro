@@ -1,4 +1,5 @@
 name: Deploy Flet App
+
 on:
   push:
     branches: [ "main" ]
@@ -12,17 +13,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.10'}
-      - name: Install
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libx11-dev mesa-utils
-          pip install flet
-      - name: Build
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install flet; fi
+
+      - name: Build web app
+        env:
+          FLET_CLI_NO_RICH_OUTPUT: "true"
         run: |
           yes | flet build web --base-url /${{ github.event.repository.name }}/
           cp build/web/index.html build/web/404.html
-      - uses: actions/upload-pages-artifact@v3
-        with: {path: 'build/web'}
-      - uses: actions/deploy-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'build/web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
