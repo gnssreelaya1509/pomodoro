@@ -1,5 +1,5 @@
 import unittest
-from core.engine import BaseEngine
+from core.timer_engine import BaseEngine
 
 class TestBaseEngine(unittest.TestCase):
     def test_initialization(self):
